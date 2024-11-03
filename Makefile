@@ -12,7 +12,7 @@ test: testdata
 debug: testdata
 	fix -- go test -v --run $(test)
 
-release:
+release: build test
 	bump && gh release create v$$(cat VERSION) --notes "$$(cat VERSION)"
 
 
