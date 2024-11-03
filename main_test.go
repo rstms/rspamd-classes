@@ -49,7 +49,7 @@ func initClasses(t *testing.T) *classes.SpamClasses {
 	return config
 }
 
-func TestDeleteClasses(t *testing.T) {
+func TestDeleteAllClasses(t *testing.T) {
 	config := initClasses(t)
 	config.Write("testdata/alpha_bravo.json")
 	require.Len(t, config.Classes, 3)
@@ -110,4 +110,42 @@ func TestInsertSort(t *testing.T) {
 	require.Equal(t, c.Classes["bravo"][3], classes.SpamClass{"high", 10})
 	require.Equal(t, c.Classes["bravo"][4], classes.SpamClass{"higher", 999})
 	dump(t, c.Classes["bravo"])
+}
+func TestDeleteClass(t *testing.T) {
+	c, err := classes.New("")
+	require.Nil(t, err)
+	c.SetThreshold("test", "one", 1)
+	c.SetThreshold("test", "two", 2)
+	c.SetThreshold("test", "three", 3)
+
+	list, ok := c.Classes["test"]
+	require.True(t, ok)
+	require.Len(t, list, 3)
+	require.Equal(t, list[0], classes.SpamClass{"one", 1})
+	require.Equal(t, list[1], classes.SpamClass{"two", 2})
+	require.Equal(t, list[2], classes.SpamClass{"three", 3})
+
+	c.DeleteClass("test", "two")
+
+	list, ok = c.Classes["test"]
+	require.True(t, ok)
+	require.Len(t, list, 2)
+	require.Equal(t, list[0], classes.SpamClass{"one", 1})
+	require.Equal(t, list[1], classes.SpamClass{"three", 3})
+
+	c.DeleteClass("test", "one")
+	list, ok = c.Classes["test"]
+	require.True(t, ok)
+	require.Len(t, list, 1)
+	require.Equal(t, list[0], classes.SpamClass{"three", 3})
+
+	c.DeleteClass("test", "fnord")
+	list, ok = c.Classes["test"]
+	require.True(t, ok)
+	require.Len(t, list, 1)
+	require.Equal(t, list[0], classes.SpamClass{"three", 3})
+
+	c.DeleteClass("test", "three")
+	list, ok = c.Classes["test"]
+	require.False(t, ok)
 }

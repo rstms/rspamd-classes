@@ -145,13 +145,28 @@ func (c *SpamClasses) GetThreshold(address, name string) (float32, bool) {
 }
 
 func (c *SpamClasses) DeleteClasses(address string) {
-    delete(c.Classes, address)
+	delete(c.Classes, address)
+}
+
+func (c *SpamClasses) DeleteClass(address, name string) {
+	_, ok := c.Classes[address]
+	if ok {
+		for i, class := range c.Classes[address] {
+			if class.Name == name {
+				c.Classes[address] = append(c.Classes[address][:i], c.Classes[address][i+1:]...)
+				if len(c.Classes[address]) == 0 {
+					c.DeleteClasses(address)
+				}
+				return
+			}
+		}
+	}
 }
 
 func (c *SpamClasses) Usernames() []string {
-    users := []string{}
-    for key, _:= range c.Classes {
-	users = append(users, key)
-    }
-    return users
+	users := []string{}
+	for key, _ := range c.Classes {
+		users = append(users, key)
+	}
+	return users
 }

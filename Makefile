@@ -1,16 +1,16 @@
 # rspamd-classes  makefile
 
 fmt:
-	fix go fmt 
+	fix go fmt . ./...
 
 build: fmt
 	fix go build
 
 test: testdata
-	fix -- go test
+	fix -- go test . ./...
 
 debug: testdata
-	fix -- go test -v --run $(test)
+	fix -- go test . ./... -v --run $(test)
 
 release: build test
 	bump && gh release create v$$(cat VERSION) --notes "$$(cat VERSION)"

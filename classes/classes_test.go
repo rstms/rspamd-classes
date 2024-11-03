@@ -110,3 +110,4 @@ func TestSort(t *testing.T) {
 	require.Equal(t, list[1].Score, float32(5))
 	require.Equal(t, list[2].Score, float32(9))
 }
+
