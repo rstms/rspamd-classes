@@ -7,6 +7,8 @@ import (
 	"sort"
 )
 
+const Version = "0.0.1"
+
 const HAM_THRESHOLD = 0.0
 const POSSIBLE_THRESHOLD = 3.0
 const PROBABLE_THRESHOLD = 10.0
@@ -118,14 +120,14 @@ func (c *SpamClasses) SetThreshold(address, name string, threshold float32) {
 	}
 	var exists bool
 	for _, class := range c.Classes[address] {
-	    if class.Name == name {
-		class.Score = threshold
-		exists = true
-		break
-	    }
+		if class.Name == name {
+			class.Score = threshold
+			exists = true
+			break
+		}
 	}
 	if !exists {
-	    c.Classes[address] = append(c.Classes[address], SpamClass{Name: name, Score: threshold})
+		c.Classes[address] = append(c.Classes[address], SpamClass{Name: name, Score: threshold})
 	}
 	sort.Sort(ByScore(c.Classes[address]))
 }

@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"testing"
 	"github.com/stretchr/testify/require"
+	"testing"
 )
 
 func TestSpamLevelsNoFile(t *testing.T) {
@@ -16,7 +16,7 @@ func TestSpamLevelsNoFile(t *testing.T) {
 		require.Equal(t, key, "default")
 		require.Equal(t, len(value), len(expected))
 		for i, level := range value {
-		    require.Equal(t,level, expected[i])
+			require.Equal(t, level, expected[i])
 		}
 	}
 }
@@ -49,65 +49,64 @@ func TestWrite(t *testing.T) {
 		fmt.Printf("key=%s classes: %v\n", key, classes)
 		fmt.Printf("key=%s rclasses: %v\n", key, rclasses)
 		for i, class := range classes {
-		    require.Equal(t, class, rclasses[i], "key=%s classes[%d] (%v) mismatches rclasses[%d] (%v)\n", key, i, class, i, rclasses[i])
+			require.Equal(t, class, rclasses[i], "key=%s classes[%d] (%v) mismatches rclasses[%d] (%v)\n", key, i, class, i, rclasses[i])
 		}
 	}
 }
 
 func TestAdd(t *testing.T) {
-    // init empty
-    c, err := New("")
-    require.Nil(t, err)
+	// init empty
+	c, err := New("")
+	require.Nil(t, err)
 
-    // add low=1
-    c.SetThreshold("user", "low", 1)
-    list, ok := c.Classes["user"]
-    require.True(t, ok)
-    require.Len(t, list, 1)
+	// add low=1
+	c.SetThreshold("user", "low", 1)
+	list, ok := c.Classes["user"]
+	require.True(t, ok)
+	require.Len(t, list, 1)
 
-    // change low=2
-    c.SetThreshold("user", "low", 2)
-    list, ok = c.Classes["user"]
-    require.True(t, ok)
-    require.Len(t, list, 1)
+	// change low=2
+	c.SetThreshold("user", "low", 2)
+	list, ok = c.Classes["user"]
+	require.True(t, ok)
+	require.Len(t, list, 1)
 
-    // add med = 5
-    c.SetThreshold("user", "medium", 5)
-    list, ok = c.Classes["user"]
-    require.True(t, ok)
-    require.Len(t, list, 2)
+	// add med = 5
+	c.SetThreshold("user", "medium", 5)
+	list, ok = c.Classes["user"]
+	require.True(t, ok)
+	require.Len(t, list, 2)
 
-    users := []string{"user"}
-    class := c.GetClass(users, -1)
-    require.Equal(t, class, "low")
-    class = c.GetClass(users, 2)
-    require.Equal(t, class, "medium")
-    class = c.GetClass(users, 9)
-    require.Equal(t, class, "medium")
+	users := []string{"user"}
+	class := c.GetClass(users, -1)
+	require.Equal(t, class, "low")
+	class = c.GetClass(users, 2)
+	require.Equal(t, class, "medium")
+	class = c.GetClass(users, 9)
+	require.Equal(t, class, "medium")
 
+	// add high=999
+	c.SetThreshold("user", "high", 999)
+	list, ok = c.Classes["user"]
+	require.True(t, ok)
+	require.Len(t, list, 3)
 
-    // add high=999
-    c.SetThreshold("user", "high", 999)
-    list, ok = c.Classes["user"]
-    require.True(t, ok)
-    require.Len(t, list, 3)
+	class = c.GetClass(users, 9)
+	require.Equal(t, class, "high")
 
-    class = c.GetClass(users, 9)
-    require.Equal(t, class, "high")
-
-    fmt.Printf("%v\n", c)
+	fmt.Printf("%v\n", c)
 }
 
 func TestSort(t *testing.T) {
-    c, err := New("")
-    require.Nil(t, err)
-    c.SetThreshold("test", "nine", 9)
-    c.SetThreshold("test", "five", 5)
-    c.SetThreshold("test", "negone", -1)
-    list, ok := c.Classes["test"]
-    require.True(t, ok)
-    require.Len(t, list, 3)
-    require.Equal(t, list[0].Score, float32(-1))
-    require.Equal(t, list[1].Score, float32(5))
-    require.Equal(t, list[2].Score, float32(9))
+	c, err := New("")
+	require.Nil(t, err)
+	c.SetThreshold("test", "nine", 9)
+	c.SetThreshold("test", "five", 5)
+	c.SetThreshold("test", "negone", -1)
+	list, ok := c.Classes["test"]
+	require.True(t, ok)
+	require.Len(t, list, 3)
+	require.Equal(t, list[0].Score, float32(-1))
+	require.Equal(t, list[1].Score, float32(5))
+	require.Equal(t, list[2].Score, float32(9))
 }
