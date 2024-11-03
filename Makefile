@@ -8,3 +8,7 @@ build: fmt
 
 test:
 	fix -- go test . ./...
+
+release:
+	bump
+	gh release create v$(cat VERSION) --notes "v$(cat VERSION)"
