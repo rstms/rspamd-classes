@@ -13,8 +13,7 @@ debug: testdata
 	fix -- go test -v --run $(test)
 
 release:
-	bump
-	gh release create v$(shell cat VERSION) --notes "v$(shell cat VERSION)"
+	bump && gh release create v$$(cat VERSION) --notes "$$(cat VERSION)"
 
 
 testdata:
