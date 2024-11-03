@@ -11,4 +11,4 @@ test:
 
 release:
 	bump
-	gh release create v$(cat VERSION) --notes "v$(cat VERSION)"
+	gh release create v$(shell cat VERSION) --notes "v$(shell cat VERSION)"
