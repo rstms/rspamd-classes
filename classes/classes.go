@@ -119,9 +119,9 @@ func (c *SpamClasses) SetThreshold(address, name string, threshold float32) {
 		c.Classes[address] = make([]SpamClass, 0)
 	}
 	var exists bool
-	for _, class := range c.Classes[address] {
+	for i, class := range c.Classes[address] {
 		if class.Name == name {
-			class.Score = threshold
+			c.Classes[address][i].Score = threshold
 			exists = true
 			break
 		}
@@ -142,4 +142,16 @@ func (c *SpamClasses) GetThreshold(address, name string) (float32, bool) {
 		}
 	}
 	return 0.0, false
+}
+
+func (c *SpamClasses) DeleteClasses(address string) {
+    delete(c.Classes, address)
+}
+
+func (c *SpamClasses) Usernames() []string {
+    users := []string{}
+    for key, _:= range c.Classes {
+	users = append(users, key)
+    }
+    return users
 }

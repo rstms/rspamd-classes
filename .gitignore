@@ -2,3 +2,4 @@ rspamd-classes
 notes
 examples
 classes/testdata/output.json
+testdata/*.json
