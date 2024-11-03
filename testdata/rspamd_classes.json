@@ -1,0 +1,8 @@
+{
+    "username@example.org": [
+	{ "name": "ham", "score":0  },
+	{ "name": "possible", "score": 3 },
+	{ "name": "probable", "score": 10 },
+	{ "name": "spam", "score": 999 }
+    ]
+}
