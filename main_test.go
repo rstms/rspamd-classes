@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/rstms/rstms-classes/classes"
+	"github.com/rstms/rspamd-classes/classes"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
