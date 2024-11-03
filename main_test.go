@@ -88,27 +88,26 @@ func TestChangeClassThreshold(t *testing.T) {
 }
 
 func TestGetClass(t *testing.T) {
-    c := initClasses(t)
-    require.Equal(t, "low", c.GetClass([]string{"bravo"}, -1))
-    c.SetThreshold("bravo", "low", -2)
-    dump(t, c.Classes["bravo"])
-    require.Equal(t, "medium", c.GetClass([]string{"bravo"}, -1))
-    require.Equal(t, "medium", c.GetClass([]string{"bravo"}, 0))
-    dump(t, c.Classes["bravo"])
-    c.SetThreshold("bravo", "new", .5)
-    dump(t, c.Classes["bravo"])
-    require.Equal(t, "new", c.GetClass([]string{"bravo"}, 0))
+	c := initClasses(t)
+	require.Equal(t, "low", c.GetClass([]string{"bravo"}, -1))
+	c.SetThreshold("bravo", "low", -2)
+	dump(t, c.Classes["bravo"])
+	require.Equal(t, "medium", c.GetClass([]string{"bravo"}, -1))
+	require.Equal(t, "medium", c.GetClass([]string{"bravo"}, 0))
+	dump(t, c.Classes["bravo"])
+	c.SetThreshold("bravo", "new", .5)
+	dump(t, c.Classes["bravo"])
+	require.Equal(t, "new", c.GetClass([]string{"bravo"}, 0))
 }
 
 func TestInsertSort(t *testing.T) {
-    c := initClasses(t)
-    c.SetThreshold("bravo", "zero", 0)
-    c.SetThreshold("bravo", "higher", 999)
-    require.Equal(t, c.Classes["bravo"][0], classes.SpamClass{"zero", 0})
-    require.Equal(t, c.Classes["bravo"][1], classes.SpamClass{"low", 1})
-    require.Equal(t, c.Classes["bravo"][2], classes.SpamClass{"medium", 5})
-    require.Equal(t, c.Classes["bravo"][3], classes.SpamClass{"high", 10})
-    require.Equal(t, c.Classes["bravo"][4], classes.SpamClass{"higher", 999})
-    dump(t, c.Classes["bravo"])
+	c := initClasses(t)
+	c.SetThreshold("bravo", "zero", 0)
+	c.SetThreshold("bravo", "higher", 999)
+	require.Equal(t, c.Classes["bravo"][0], classes.SpamClass{"zero", 0})
+	require.Equal(t, c.Classes["bravo"][1], classes.SpamClass{"low", 1})
+	require.Equal(t, c.Classes["bravo"][2], classes.SpamClass{"medium", 5})
+	require.Equal(t, c.Classes["bravo"][3], classes.SpamClass{"high", 10})
+	require.Equal(t, c.Classes["bravo"][4], classes.SpamClass{"higher", 999})
+	dump(t, c.Classes["bravo"])
 }
-
