@@ -95,6 +95,18 @@ func (c *SpamClasses) Write(filename string) error {
 	return nil
 }
 
+func (c *SpamClasses) GetClasses(address string) []SpamClass {
+	classes, ok := c.Classes[address]
+	if ok {
+		return classes
+	}
+	classes, ok = c.Classes["default"]
+	if ok {
+		return classes
+	}
+	return []SpamClass{}
+}
+
 func (c *SpamClasses) GetClass(addresses []string, score float32) string {
 	classes, ok := c.Classes["default"]
 	if !ok {
