@@ -95,6 +95,7 @@ func (c *SpamClasses) Write(filename string) error {
 	return nil
 }
 
+// return slice of SpamClass for address or default;  always returns a list
 func (c *SpamClasses) GetClasses(address string) []SpamClass {
 	classes, ok := c.Classes[address]
 	if ok {
