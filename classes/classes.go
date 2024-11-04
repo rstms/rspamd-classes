@@ -58,7 +58,6 @@ func New(filename string) (*SpamClasses, error) {
 	return &classes, nil
 }
 
-
 func (c *SpamClasses) Read(filename string) error {
 
 	if filename == "" {
@@ -99,7 +98,7 @@ func (c *SpamClasses) Write(filename string) error {
 func (c *SpamClasses) GetClass(addresses []string, score float32) string {
 	classes, ok := c.Classes["default"]
 	if !ok {
-	    return ""
+		return ""
 	}
 	for _, address := range addresses {
 		addrClasses, ok := c.Classes[address]
