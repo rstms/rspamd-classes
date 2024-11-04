@@ -37,6 +37,28 @@ func (a ByScore) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 
+func New(filename string) (*SpamClasses, error) {
+	classes := SpamClasses{
+		Classes: make(map[string][]SpamClass, 0),
+	}
+
+	if filename != "" {
+		err := classes.Read(filename)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	classes.Classes["default"] = nil
+	classes.SetThreshold("default", "ham", HAM_THRESHOLD)
+	classes.SetThreshold("default", "possible", POSSIBLE_THRESHOLD)
+	classes.SetThreshold("default", "probable", PROBABLE_THRESHOLD)
+	classes.SetThreshold("default", "spam", MAX_THRESHOLD)
+
+	return &classes, nil
+}
+
+
 func (c *SpamClasses) Read(filename string) error {
 
 	if filename == "" {
@@ -74,28 +96,11 @@ func (c *SpamClasses) Write(filename string) error {
 	return nil
 }
 
-func New(filename string) (*SpamClasses, error) {
-	classes := SpamClasses{
-		Classes: make(map[string][]SpamClass, 0),
-	}
-	if filename != "" {
-		err := classes.Read(filename)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	classes.Classes["default"] = nil
-	classes.SetThreshold("default", "ham", HAM_THRESHOLD)
-	classes.SetThreshold("default", "possible", POSSIBLE_THRESHOLD)
-	classes.SetThreshold("default", "probable", PROBABLE_THRESHOLD)
-	classes.SetThreshold("default", "spam", MAX_THRESHOLD)
-
-	return &classes, nil
-}
-
 func (c *SpamClasses) GetClass(addresses []string, score float32) string {
-	classes := c.Classes["default"]
+	classes, ok := c.Classes["default"]
+	if !ok {
+	    return ""
+	}
 	for _, address := range addresses {
 		addrClasses, ok := c.Classes[address]
 		if ok {
