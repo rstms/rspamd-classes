@@ -1,6 +1,6 @@
 # rspamd-classes  makefile
 
-fmt:
+fmt: go.sum
 	fix go fmt . ./...
 
 build: fmt
@@ -22,4 +22,14 @@ testdata:
 clean:
 	go clean
 	rm -f testdata/*.json
+
+sterile: clean
+	go clean -r -cache -modcache
+	rm -f go.mod go.sum
+
+go.sum: go.mod
+	go mod tidy
+
+go.mod:
+	go mod init
 
