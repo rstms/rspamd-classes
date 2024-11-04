@@ -1,10 +1,10 @@
 # rspamd-classes  makefile
 
+build: fmt
+	fix go build . ./...
+
 fmt: go.sum
 	fix go fmt . ./...
-
-build: fmt
-	fix go build
 
 test: testdata
 	fix -- go test . ./...
