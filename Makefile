@@ -7,7 +7,7 @@ fmt: go.sum
 	fix go fmt . ./...
 
 test: testdata
-	fix -- go test . ./...
+	fix -- go test . ./... -failfast
 
 debug: testdata
 	fix -- go test . ./... -v --run $(test)

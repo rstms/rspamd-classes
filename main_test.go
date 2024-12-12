@@ -103,12 +103,13 @@ func TestGetClass(t *testing.T) {
 func TestInsertSort(t *testing.T) {
 	c := initClasses(t)
 	c.SetThreshold("bravo", "zero", 0)
-	c.SetThreshold("bravo", "higher", 999)
+	c.SetThreshold("bravo", "higher", 100)
 	require.Equal(t, c.Classes["bravo"][0], classes.SpamClass{"zero", 0})
 	require.Equal(t, c.Classes["bravo"][1], classes.SpamClass{"low", 1})
 	require.Equal(t, c.Classes["bravo"][2], classes.SpamClass{"medium", 5})
 	require.Equal(t, c.Classes["bravo"][3], classes.SpamClass{"high", 10})
-	require.Equal(t, c.Classes["bravo"][4], classes.SpamClass{"higher", 999})
+	require.Equal(t, c.Classes["bravo"][4], classes.SpamClass{"higher", 100})
+	require.Equal(t, c.Classes["bravo"][5], classes.SpamClass{"spam", 999})
 	dump(t, c.Classes["bravo"])
 }
 func TestDeleteClass(t *testing.T) {
@@ -120,44 +121,55 @@ func TestDeleteClass(t *testing.T) {
 
 	list, ok := c.Classes["test"]
 	require.True(t, ok)
-	require.Len(t, list, 3)
+	require.Len(t, list, 4)
 	require.Equal(t, list[0], classes.SpamClass{"one", 1})
 	require.Equal(t, list[1], classes.SpamClass{"two", 2})
 	require.Equal(t, list[2], classes.SpamClass{"three", 3})
+	require.Equal(t, list[3], classes.SpamClass{"spam", 999})
 
 	c.DeleteClass("test", "two")
 
 	list, ok = c.Classes["test"]
 	require.True(t, ok)
-	require.Len(t, list, 2)
+	require.Len(t, list, 3)
 	require.Equal(t, list[0], classes.SpamClass{"one", 1})
 	require.Equal(t, list[1], classes.SpamClass{"three", 3})
+	require.Equal(t, list[2], classes.SpamClass{"spam", 999})
 
 	c.DeleteClass("test", "one")
 	list, ok = c.Classes["test"]
 	require.True(t, ok)
-	require.Len(t, list, 1)
+	require.Len(t, list, 2)
 	require.Equal(t, list[0], classes.SpamClass{"three", 3})
+	require.Equal(t, list[1], classes.SpamClass{"spam", 999})
 
 	c.DeleteClass("test", "fnord")
 	list, ok = c.Classes["test"]
 	require.True(t, ok)
-	require.Len(t, list, 1)
+	require.Len(t, list, 2)
 	require.Equal(t, list[0], classes.SpamClass{"three", 3})
+	require.Equal(t, list[1], classes.SpamClass{"spam", 999})
 
 	c.DeleteClass("test", "three")
 	list, ok = c.Classes["test"]
+	require.True(t, ok)
+	require.Equal(t, list[0], classes.SpamClass{"spam", 999})
+
+	c.DeleteClass("test", "spam")
+	list, ok = c.Classes["test"]
 	require.False(t, ok)
+
 }
 
 func TestGetClasses(t *testing.T) {
 	c := initClasses(t)
 
 	alist := c.GetClasses("alpha")
-	require.Len(t, alist, 3)
+	require.Len(t, alist, 4)
 	require.Equal(t, alist[0], classes.SpamClass{"low", 1})
 	require.Equal(t, alist[1], classes.SpamClass{"medium", 5})
 	require.Equal(t, alist[2], classes.SpamClass{"high", 10})
+	require.Equal(t, alist[3], classes.SpamClass{"spam", 999})
 
 	dlist := c.GetClasses("default")
 	require.Len(t, dlist, 4)

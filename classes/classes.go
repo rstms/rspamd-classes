@@ -23,6 +23,13 @@ type SpamClasses struct {
 	Classes map[string][]SpamClass
 }
 
+var DefaultClasses = []SpamClass{
+	{"ham", HAM_THRESHOLD},
+	{"possible", POSSIBLE_THRESHOLD},
+	{"probable", PROBABLE_THRESHOLD},
+	{"spam", MAX_THRESHOLD},
+}
+
 type ByScore []SpamClass
 
 func (a ByScore) Len() int {
@@ -49,13 +56,29 @@ func New(filename string) (*SpamClasses, error) {
 		}
 	}
 
-	classes.Classes["default"] = nil
-	classes.SetThreshold("default", "ham", HAM_THRESHOLD)
-	classes.SetThreshold("default", "possible", POSSIBLE_THRESHOLD)
-	classes.SetThreshold("default", "probable", PROBABLE_THRESHOLD)
-	classes.SetThreshold("default", "spam", MAX_THRESHOLD)
-
+	classes.Classes["default"] = DefaultClasses
 	return &classes, nil
+}
+
+// fix out of order or missing spam threshold
+func (c *SpamClasses) validate(address string) {
+	classes, ok := c.Classes[address]
+	if !ok {
+		return
+	}
+	classMap := map[string]float32{}
+	for _, class := range classes {
+		if class.Score < MAX_THRESHOLD {
+			classMap[class.Name] = class.Score
+		}
+	}
+	classMap["spam"] = MAX_THRESHOLD
+	valid := []SpamClass{}
+	for name, score := range classMap {
+		valid = append(valid, SpamClass{name, score})
+	}
+	sort.Sort(ByScore(valid))
+	c.Classes[address] = valid
 }
 
 func (c *SpamClasses) Read(filename string) error {
@@ -76,14 +99,17 @@ func (c *SpamClasses) Read(filename string) error {
 	if err != nil {
 		return fmt.Errorf("failed parsing %s: %v", filename, err)
 	}
-	for addr, classes := range configClasses {
-		sort.Sort(ByScore(classes))
-		c.Classes[addr] = classes
+	c.Classes = configClasses
+	for addr := range c.Classes {
+		c.validate(addr)
 	}
 	return nil
 }
 
 func (c *SpamClasses) Write(filename string) error {
+	for address := range c.Classes {
+		c.validate(address)
+	}
 	data, err := json.MarshalIndent(&c.Classes, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed marshalling: %v", err)
@@ -97,21 +123,23 @@ func (c *SpamClasses) Write(filename string) error {
 
 // return slice of SpamClass for address or default;  always returns a list
 func (c *SpamClasses) GetClasses(address string) []SpamClass {
-	classes, ok := c.Classes[address]
+	_, ok := c.Classes[address]
 	if ok {
-		return classes
+		c.validate(address)
+		return c.Classes[address]
 	}
-	classes, ok = c.Classes["default"]
+	_, ok = c.Classes["default"]
 	if ok {
-		return classes
+		c.validate("default")
+		return c.Classes["default"]
 	}
-	return []SpamClass{}
+	return DefaultClasses
 }
 
 func (c *SpamClasses) GetClass(addresses []string, score float32) string {
 	classes, ok := c.Classes["default"]
 	if !ok {
-		return ""
+		classes = DefaultClasses
 	}
 	for _, address := range addresses {
 		addrClasses, ok := c.Classes[address]
@@ -131,22 +159,23 @@ func (c *SpamClasses) GetClass(addresses []string, score float32) string {
 }
 
 func (c *SpamClasses) SetThreshold(address, name string, threshold float32) {
-	_, ok := c.Classes[address]
+	classes, ok := c.Classes[address]
 	if !ok {
-		c.Classes[address] = make([]SpamClass, 0)
+		classes = make([]SpamClass, 0)
 	}
 	var exists bool
-	for i, class := range c.Classes[address] {
+	for i, class := range classes {
 		if class.Name == name {
-			c.Classes[address][i].Score = threshold
+			classes[i].Score = threshold
 			exists = true
 			break
 		}
 	}
 	if !exists {
-		c.Classes[address] = append(c.Classes[address], SpamClass{Name: name, Score: threshold})
+		classes = append(classes, SpamClass{Name: name, Score: threshold})
 	}
-	sort.Sort(ByScore(c.Classes[address]))
+	c.Classes[address] = classes
+	c.validate(address)
 }
 
 func (c *SpamClasses) GetThreshold(address, name string) (float32, bool) {
@@ -173,6 +202,8 @@ func (c *SpamClasses) DeleteClass(address, name string) {
 				c.Classes[address] = append(c.Classes[address][:i], c.Classes[address][i+1:]...)
 				if len(c.Classes[address]) == 0 {
 					c.DeleteClasses(address)
+				} else {
+					c.validate(address)
 				}
 				return
 			}

@@ -63,19 +63,19 @@ func TestAdd(t *testing.T) {
 	c.SetThreshold("user", "low", 1)
 	list, ok := c.Classes["user"]
 	require.True(t, ok)
-	require.Len(t, list, 1)
+	require.Len(t, list, 2)
 
 	// change low=2
 	c.SetThreshold("user", "low", 2)
 	list, ok = c.Classes["user"]
 	require.True(t, ok)
-	require.Len(t, list, 1)
+	require.Len(t, list, 2)
 
 	// add med = 5
 	c.SetThreshold("user", "medium", 5)
 	list, ok = c.Classes["user"]
 	require.True(t, ok)
-	require.Len(t, list, 2)
+	require.Len(t, list, 3)
 
 	users := []string{"user"}
 	class := c.GetClass(users, -1)
@@ -83,13 +83,13 @@ func TestAdd(t *testing.T) {
 	class = c.GetClass(users, 2)
 	require.Equal(t, class, "medium")
 	class = c.GetClass(users, 9)
-	require.Equal(t, class, "medium")
+	require.Equal(t, class, "spam")
 
-	// add high=999
-	c.SetThreshold("user", "high", 999)
+	// add high=10
+	c.SetThreshold("user", "high", 10)
 	list, ok = c.Classes["user"]
 	require.True(t, ok)
-	require.Len(t, list, 3)
+	require.Len(t, list, 4)
 
 	class = c.GetClass(users, 9)
 	require.Equal(t, class, "high")
@@ -105,8 +105,9 @@ func TestSort(t *testing.T) {
 	c.SetThreshold("test", "negone", -1)
 	list, ok := c.Classes["test"]
 	require.True(t, ok)
-	require.Len(t, list, 3)
+	require.Len(t, list, 4)
 	require.Equal(t, list[0].Score, float32(-1))
 	require.Equal(t, list[1].Score, float32(5))
 	require.Equal(t, list[2].Score, float32(9))
+	require.Equal(t, list[3].Score, float32(999))
 }
