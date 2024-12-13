@@ -9,10 +9,12 @@ import (
 
 const Version = "0.3.1"
 
-const HAM_THRESHOLD = 0.0
-const POSSIBLE_THRESHOLD = 3.0
-const PROBABLE_THRESHOLD = 10.0
-const MAX_THRESHOLD = 999.0
+const HAM_THRESHOLD = float32(0)
+const POSSIBLE_THRESHOLD = float32(3)
+const PROBABLE_THRESHOLD = float32(10)
+const MAX_THRESHOLD = float32(999)
+const MAX_NAME = "spam"
+const DEFAULT_NAME = "default"
 
 type SpamClass struct {
 	Name  string  `json:"name"`
@@ -27,7 +29,7 @@ var DefaultClasses = []SpamClass{
 	{"ham", HAM_THRESHOLD},
 	{"possible", POSSIBLE_THRESHOLD},
 	{"probable", PROBABLE_THRESHOLD},
-	{"spam", MAX_THRESHOLD},
+	{MAX_NAME, MAX_THRESHOLD},
 }
 
 type ByScore []SpamClass
@@ -64,7 +66,7 @@ func New(filename string) (*SpamClasses, error) {
 		}
 	}
 
-	classes.Classes["default"] = DefaultClasses
+	classes.Classes[DEFAULT_NAME] = DefaultClasses
 	return &classes, nil
 }
 
@@ -74,16 +76,22 @@ func (c *SpamClasses) validate(address string) {
 	if !ok {
 		return
 	}
-	classMap := map[string]float32{}
+	nameMap := map[string]bool{MAX_NAME: true}
+	scoreMap := map[float32]bool{MAX_THRESHOLD: true}
+	valid := []SpamClass{{MAX_NAME, MAX_THRESHOLD}}
+
 	for _, class := range classes {
-		if class.Score < MAX_THRESHOLD {
-			classMap[class.Name] = class.Score
+		_, nameExists := nameMap[class.Name]
+		if nameExists {
+			continue
 		}
-	}
-	classMap["spam"] = MAX_THRESHOLD
-	valid := []SpamClass{}
-	for name, score := range classMap {
-		valid = append(valid, SpamClass{name, score})
+		_, scoreExists := scoreMap[class.Score]
+		if scoreExists {
+			continue
+		}
+		nameMap[class.Name] = true
+		scoreMap[class.Score] = true
+		valid = append(valid, SpamClass{class.Name, class.Score})
 	}
 	sort.Sort(ByScore(valid))
 	c.Classes[address] = valid
@@ -108,14 +116,13 @@ func (c *SpamClasses) Read(filename string) error {
 		return fmt.Errorf("failed parsing %s: %v", filename, err)
 	}
 	c.Classes = configClasses
-	_, ok := c.Classes["default"]
+	_, ok := c.Classes[DEFAULT_NAME]
 	if !ok {
-		c.Classes["default"] = dupClasses(DefaultClasses)
+		c.Classes[DEFAULT_NAME] = dupClasses(DefaultClasses)
 	}
-	for addr := range c.Classes {
-		c.validate(addr)
-	}
-	return nil
+
+	// write the file to validate classes and save the result
+	return c.Write(filename)
 }
 
 func (c *SpamClasses) Write(filename string) error {
@@ -141,7 +148,7 @@ func (c *SpamClasses) GetClasses(address string) []SpamClass {
 	if ok {
 		return classes
 	}
-	classes, ok = c.Classes["default"]
+	classes, ok = c.Classes[DEFAULT_NAME]
 	if !ok {
 		classes = DefaultClasses
 	}
@@ -150,17 +157,23 @@ func (c *SpamClasses) GetClasses(address string) []SpamClass {
 	return c.Classes[address]
 }
 
+func (c *SpamClasses) SetClasses(address string, classes []SpamClass) []SpamClass {
+	c.Classes[address] = dupClasses(classes)
+	c.validate(address)
+	return c.Classes[address]
+}
+
 func (c *SpamClasses) GetClass(addresses []string, score float32) string {
-	classes, ok := c.Classes["default"]
-	if !ok {
-		classes = DefaultClasses
-	}
+	classes := []SpamClass{}
 	for _, address := range addresses {
-		addrClasses, ok := c.Classes[address]
+		var ok bool
+		classes, ok = c.Classes[address]
 		if ok {
-			classes = addrClasses
 			break
 		}
+	}
+	if len(classes) == 0 {
+		classes = c.GetClasses(DEFAULT_NAME)
 	}
 	var result string
 	for _, class := range classes {
@@ -173,10 +186,10 @@ func (c *SpamClasses) GetClass(addresses []string, score float32) string {
 }
 
 func (c *SpamClasses) SetThreshold(address, name string, threshold float32) {
-	classes, ok := c.Classes[address]
-	if !ok {
-		classes = make([]SpamClass, 0)
+	if name == MAX_NAME {
+		threshold = MAX_THRESHOLD
 	}
+	classes := c.GetClasses(address)
 	var exists bool
 	for i, class := range classes {
 		if class.Name == name {
@@ -193,12 +206,10 @@ func (c *SpamClasses) SetThreshold(address, name string, threshold float32) {
 }
 
 func (c *SpamClasses) GetThreshold(address, name string) (float32, bool) {
-	classes, ok := c.Classes[address]
-	if ok {
-		for _, class := range classes {
-			if class.Name == name {
-				return class.Score, true
-			}
+	classes := c.GetClasses(address)
+	for _, class := range classes {
+		if class.Name == name {
+			return class.Score, true
 		}
 	}
 	return 0.0, false
@@ -209,18 +220,19 @@ func (c *SpamClasses) DeleteClasses(address string) {
 }
 
 func (c *SpamClasses) DeleteClass(address, name string) {
-	_, ok := c.Classes[address]
-	if ok {
-		for i, class := range c.Classes[address] {
-			if class.Name == name {
-				c.Classes[address] = append(c.Classes[address][:i], c.Classes[address][i+1:]...)
-				if len(c.Classes[address]) == 0 {
-					c.DeleteClasses(address)
-				} else {
-					c.validate(address)
-				}
-				return
+	if name == MAX_NAME {
+		return
+	}
+	classes := c.GetClasses(address)
+	for i, class := range classes {
+		if class.Name == name {
+			c.Classes[address] = append(c.Classes[address][:i], c.Classes[address][i+1:]...)
+			if len(c.Classes[address]) == 0 {
+				c.DeleteClasses(address)
+			} else {
+				c.validate(address)
 			}
+			return
 		}
 	}
 }

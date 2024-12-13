@@ -55,9 +55,17 @@ func TestWrite(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
-	// init empty
+	// init empty config
 	c, err := New("")
 	require.Nil(t, err)
+
+	// set empty class list
+	list := c.SetClasses("user", []SpamClass{})
+
+	// check that only spam class exists
+	require.Len(t, list, 1)
+	require.Equal(t, list[0].Name, "spam")
+	require.Equal(t, list[0].Score, float32(999.0))
 
 	// add low=1
 	c.SetThreshold("user", "low", 1)
@@ -100,6 +108,10 @@ func TestAdd(t *testing.T) {
 func TestSort(t *testing.T) {
 	c, err := New("")
 	require.Nil(t, err)
+
+	// set empty class list
+	list := c.SetClasses("test", []SpamClass{})
+
 	c.SetThreshold("test", "nine", 9)
 	c.SetThreshold("test", "five", 5)
 	c.SetThreshold("test", "negone", -1)

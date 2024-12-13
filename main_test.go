@@ -40,12 +40,14 @@ func TestEdits(t *testing.T) {
 func initClasses(t *testing.T) *classes.SpamClasses {
 	config, err := classes.New("")
 	require.Nil(t, err)
-	config.SetThreshold("alpha", "low", 1)
-	config.SetThreshold("alpha", "medium", 5)
-	config.SetThreshold("alpha", "high", 10)
+	config.SetClasses("alpha", []classes.SpamClass{{"low", 1}, {"medium", 5}, {"high", 10}})
+	config.SetClasses("bravo", []classes.SpamClass{})
 	config.SetThreshold("bravo", "low", 1)
 	config.SetThreshold("bravo", "medium", 5)
 	config.SetThreshold("bravo", "high", 10)
+	alpha := config.GetClasses("alpha")
+	bravo := config.GetClasses("alpha")
+	require.Equal(t, alpha, bravo)
 	return config
 }
 
@@ -112,9 +114,11 @@ func TestInsertSort(t *testing.T) {
 	require.Equal(t, c.Classes["bravo"][5], classes.SpamClass{"spam", 999})
 	dump(t, c.Classes["bravo"])
 }
+
 func TestDeleteClass(t *testing.T) {
 	c, err := classes.New("")
 	require.Nil(t, err)
+	c.SetClasses("test", []classes.SpamClass{})
 	c.SetThreshold("test", "one", 1)
 	c.SetThreshold("test", "two", 2)
 	c.SetThreshold("test", "three", 3)
@@ -155,9 +159,11 @@ func TestDeleteClass(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, list[0], classes.SpamClass{"spam", 999})
 
+	// cannot delete spam class
 	c.DeleteClass("test", "spam")
 	list, ok = c.Classes["test"]
-	require.False(t, ok)
+	require.True(t, ok)
+	require.Equal(t, list[0], classes.SpamClass{"spam", 999})
 
 }
 
