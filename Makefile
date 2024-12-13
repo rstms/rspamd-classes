@@ -1,35 +1,41 @@
-# rspamd-classes  makefile
+# go makefile
+
+program != basename $$(pwd)
+
+latest_release != gh release list --json tagName --jq '.[0].tagName' | tr -d v
+version != cat VERSION
+
+gitclean = if git status --porcelain | grep '^.*$$'; then echo git status is dirty; false; else echo git status is clean; true; fi
 
 build: fmt
-	fix go build . ./...
+	fix go build
 
 fmt: go.sum
 	fix go fmt . ./...
 
-test: testdata
-	fix -- go test . ./... -failfast
-
-debug: testdata
-	fix -- go test . ./... -v --run $(test)
-
-release: build test
-	bump && gh release create v$$(cat VERSION) --notes "$$(cat VERSION)"
-
-
-testdata:
-	mkdir testdata
-
-clean:
-	go clean
-	rm -f testdata/*.json
-
-sterile: clean
-	go clean -r -cache -modcache
-	rm -f go.mod go.sum
+go.mod:
+	go mod init
 
 go.sum: go.mod
 	go mod tidy
 
-go.mod:
-	go mod init
+install: build
+	go install
 
+test:
+	fix -- go test -v . ./...
+
+release:
+	@$(gitclean) || { [ -n "$(dirty)" ] && echo "allowing dirty release"; }
+	@$(if $(update),gh release delete -y v$(version),)
+	gh release create v$(version) --notes "v$(version)"
+
+clean:
+	rm -f $(program)
+	go clean
+
+sterile: clean
+	go clean -r
+	go clean -cache
+	go clean -modcache
+	rm -f go.mod go.sum
