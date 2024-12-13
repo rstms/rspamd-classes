@@ -44,6 +44,14 @@ func (a ByScore) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 
+func dupClasses(classes []SpamClass) []SpamClass {
+	ret := []SpamClass{}
+	for _, class := range classes {
+		ret = append(ret, SpamClass{class.Name, class.Score})
+	}
+	return ret
+}
+
 func New(filename string) (*SpamClasses, error) {
 	classes := SpamClasses{
 		Classes: make(map[string][]SpamClass, 0),
@@ -100,6 +108,10 @@ func (c *SpamClasses) Read(filename string) error {
 		return fmt.Errorf("failed parsing %s: %v", filename, err)
 	}
 	c.Classes = configClasses
+	_, ok := c.Classes["default"]
+	if !ok {
+		c.Classes["default"] = dupClasses(DefaultClasses)
+	}
 	for addr := range c.Classes {
 		c.validate(addr)
 	}
@@ -123,17 +135,19 @@ func (c *SpamClasses) Write(filename string) error {
 
 // return slice of SpamClass for address or default;  always returns a list
 func (c *SpamClasses) GetClasses(address string) []SpamClass {
-	_, ok := c.Classes[address]
+	var classes []SpamClass
+	var ok bool
+	classes, ok = c.Classes[address]
 	if ok {
-		c.validate(address)
-		return c.Classes[address]
+		return classes
 	}
-	_, ok = c.Classes["default"]
-	if ok {
-		c.validate("default")
-		return c.Classes["default"]
+	classes, ok = c.Classes["default"]
+	if !ok {
+		classes = DefaultClasses
 	}
-	return DefaultClasses
+	c.Classes[address] = dupClasses(classes)
+	c.validate(address)
+	return c.Classes[address]
 }
 
 func (c *SpamClasses) GetClass(addresses []string, score float32) string {
