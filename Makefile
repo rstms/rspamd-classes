@@ -23,7 +23,8 @@ install: build
 	go install
 
 test:
-	fix -- go test -v -failfast . ./...
+	fix -- go test -v -failfast .
+	fix -- go test -v -failfast ./...
 
 release:
 	@$(gitclean) || { [ -n "$(dirty)" ] && echo "allowing dirty release"; }

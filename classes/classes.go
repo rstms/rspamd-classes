@@ -70,6 +70,13 @@ func New(filename string) (*SpamClasses, error) {
 	return &classes, nil
 }
 
+// validate all classes
+func (c *SpamClasses) validateAll() {
+	for address := range c.Classes {
+		c.validate(address)
+	}
+}
+
 // fix out of order or missing spam threshold
 func (c *SpamClasses) validate(address string) {
 	classes, ok := c.Classes[address]
@@ -121,14 +128,13 @@ func (c *SpamClasses) Read(filename string) error {
 		c.Classes[DEFAULT_NAME] = dupClasses(DefaultClasses)
 	}
 
-	// write the file to validate classes and save the result
-	return c.Write(filename)
+	c.validateAll()
+
+	return nil
 }
 
 func (c *SpamClasses) Write(filename string) error {
-	for address := range c.Classes {
-		c.validate(address)
-	}
+	c.validateAll()
 	data, err := json.MarshalIndent(&c.Classes, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed marshalling: %v", err)
