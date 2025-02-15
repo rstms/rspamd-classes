@@ -1,6 +1,6 @@
 module github.com/rstms/rspamd-classes
 
-go 1.22.5
+go 1.22.1
 
 require github.com/stretchr/testify v1.10.0
 
