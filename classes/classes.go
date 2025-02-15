@@ -7,7 +7,7 @@ import (
 	"sort"
 )
 
-const Version = "0.3.4"
+const Version = "0.3.5"
 
 const HAM_THRESHOLD = float32(0)
 const POSSIBLE_THRESHOLD = float32(3)
