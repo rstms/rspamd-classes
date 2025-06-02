@@ -2,11 +2,7 @@
   "default": [
     {
       "name": "ham",
-      "score": 0
-    },
-    {
-      "name": "possible",
-      "score": 3
+      "score": 5
     },
     {
       "name": "probable",
@@ -20,11 +16,7 @@
   "username@example.org": [
     {
       "name": "ham",
-      "score": 0
-    },
-    {
-      "name": "possible",
-      "score": 3
+      "score": 5
     },
     {
       "name": "probable",

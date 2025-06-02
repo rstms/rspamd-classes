@@ -11,7 +11,7 @@ func TestSpamLevelsNoFile(t *testing.T) {
 	require.Nil(t, err)
 	fmt.Printf("SpamClasses: %v\n", SpamClasses)
 	require.Len(t, SpamClasses.Classes, 1)
-	expected := []SpamClass{{"ham", 0.0}, {"possible", 3.0}, {"probable", 10.0}, {"spam", 999}}
+	expected := []SpamClass{{"ham", 5.0},  {"probable", 10.0}, {"spam", 999}}
 	for key, value := range SpamClasses.Classes {
 		require.Equal(t, key, "default")
 		require.Equal(t, len(value), len(expected))

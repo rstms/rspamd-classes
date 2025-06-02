@@ -23,8 +23,11 @@ install: build
 	go install
 
 test:
-	fix -- go test -v -failfast .
-	fix -- go test -v -failfast ./...
+	go test -v -failfast -count=1 .
+	go test -v -failfast -count=1 ./...
+
+debug:
+	go test -v -failfast -count=1 -run $(test) . ./...
 
 release:
 	@$(gitclean) || { [ -n "$(dirty)" ] && echo "allowing dirty release"; }

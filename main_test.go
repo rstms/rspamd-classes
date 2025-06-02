@@ -178,13 +178,12 @@ func TestGetClasses(t *testing.T) {
 	require.Equal(t, alist[3], classes.SpamClass{"spam", 999})
 
 	dlist := c.GetClasses("default")
-	require.Len(t, dlist, 4)
-	require.Equal(t, dlist[0], classes.SpamClass{"ham", 0})
-	require.Equal(t, dlist[1], classes.SpamClass{"possible", 3})
-	require.Equal(t, dlist[2], classes.SpamClass{"probable", 10})
-	require.Equal(t, dlist[3], classes.SpamClass{"spam", 999})
+	require.Len(t, dlist, 3)
+	require.Equal(t, dlist[0], classes.SpamClass{"ham", 5})
+	require.Equal(t, dlist[1], classes.SpamClass{"probable", 10})
+	require.Equal(t, dlist[2], classes.SpamClass{"spam", 999})
 
 	nlist := c.GetClasses("nonexistent")
-	require.Len(t, nlist, 4)
+	require.Len(t, nlist, 3)
 	require.Equal(t, dlist, nlist)
 }

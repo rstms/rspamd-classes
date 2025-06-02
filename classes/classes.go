@@ -9,8 +9,7 @@ import (
 
 const Version = "1.0.2"
 
-const HAM_THRESHOLD = float32(0)
-const POSSIBLE_THRESHOLD = float32(3)
+const HAM_THRESHOLD = float32(5)
 const PROBABLE_THRESHOLD = float32(10)
 const MAX_THRESHOLD = float32(999)
 const MAX_NAME = "spam"
@@ -27,7 +26,6 @@ type SpamClasses struct {
 
 var DefaultClasses = []SpamClass{
 	{"ham", HAM_THRESHOLD},
-	{"possible", POSSIBLE_THRESHOLD},
 	{"probable", PROBABLE_THRESHOLD},
 	{MAX_NAME, MAX_THRESHOLD},
 }
